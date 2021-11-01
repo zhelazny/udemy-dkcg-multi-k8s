@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: worker
+  template:
+    metadata:
+      labels:
+        component: worker
+    spec:
+      containers:
+        - name: worker
+          image: zhelazny/udemy-dkcg-docker-multi-worker
+          # no need to any ports, because we only make use of services
+          # when we want to have requests going into a set of pods or into 
+          # a single pod. No need to directly connect to the worker and try 
+          # to get some info out of it.
+          env:
+            - name: REDIS_HOST
+              value: redis-cluster-ip-service
+            - name: REDIS_PORT
+              value: '6379'
