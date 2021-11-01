@@ -1,0 +1,25 @@
+sudo: required
+services:
+  - docker
+env:
+  global:
+    - GIT_SHA=$(git rev-parse HEAD) # get latest git commit for repo
+    - CLOUDSDK_CORE_DISABLE_PROMPTS=1 # disable promts for google sdk
+before_install:
+  - openssl aes-256-cbc -K $encrypted_079798ssf8324_key -iv $encrypted_... # get this string after encryption things in docker (travis encrypt ...)
+  - curl https://sdk.cloud.google.com | bash > /dev/null;
+  - source $HOME/google-cloud-sdk/path.bash.inc
+  - gcloud components update kubectl
+  - gcloud atuh activate-service-account --key-file service-account.json
+  - gcloud config set project <google-cloud-project-id> # configure SDK with Google cloud auth info
+  - gcloud config set compute/zone <google-cloud-project-zone> # e.g. us-central1-a
+  - gcloud container clusters get-credentials <name-of-cluster> # e.g. multi-docker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --passord-stdin # login to Docker cli
+  - docker build -t zhelzany/react-test -f ./frontend/Dockerfile.dev # build image for tests
+script:
+  - docker run zhelzany/react-test npm test -- --coverage # run tests, -- --coverage needs to exit tests, otherwise it will run forever
+deploy:
+  provider: script
+  script: bash ./deploy.sh
+  on:
+    branch: master
