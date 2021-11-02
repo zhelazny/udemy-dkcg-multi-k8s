@@ -4,10 +4,16 @@ metadata:
   name: ingress-service
   annotations:
     appgw.ingress.kubernetes.io/backend-path-prefix: "/"
+    cert-manager.io/issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
+  tls:
+  - hosts:
+    - example.example.com
+    secretName: quickstart-example-tls
   rules:
-    - http:
+    - host: example.example.com
+      http:
         paths:
           - path: "/"
             pathType: ImplementationSpecific
